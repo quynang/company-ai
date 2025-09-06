@@ -1,0 +1,52 @@
+QUY TẮC TÍNH PHÉP NĂM
+
+1. THỜI GIAN TÍNH PHÉP
+- Phép năm của Nhân viên được tính từ ngày 01 tháng 01 cho đến ngày 31 tháng 12
+- Phép năm được xác định theo thời gian làm việc trong năm của nhân viên
+
+2. ĐIỀU KIỆN ĐƯỢC CẤP PHÉP
+- Nhân viên được cấp phép khi đã ký Hợp đồng lao động
+- Nhân viên được hoàn lại phép trong thời gian thử việc
+- Nhân viên trong thời gian thử việc sẽ KHÔNG được đăng ký nghỉ phép năm
+
+3. QUY TẮC TÍNH PHÉP THEO NGÀY VÀO LÀM
+- Nhân viên vào làm TRƯỚC ngày 16: được cấp phép trong tháng đó
+- Nhân viên vào làm TỪ ngày 16 trở về sau: KHÔNG được cấp phép trong tháng đó
+
+4. QUY TẮC TÍNH PHÉP THEO NGÀY NGHỈ VIỆC  
+- Nhân viên nghỉ việc TRƯỚC ngày 16: KHÔNG được cấp phép trong tháng đó
+- Nhân viên nghỉ việc TỪ ngày 16 trở về sau: được cấp phép trong tháng đó
+
+5. KẾT CHUYỂN NGÀY PHÉP
+- Nhân viên được chuyển tối đa 5 ngày phép từ năm cũ sang năm sau
+- Ngày phép chuyển chỉ được sử dụng đến hết ngày 31/3 năm sau
+- Thời gian kết phép, chuyển phép: đến hết ngày 31/12 hàng năm
+
+6. PHÉP THÂM NIÊN
+- Nhân viên đủ 3 năm thâm niên được cấp thêm 1 ngày phép
+- Phép thâm niên được sử dụng cho năm đó và có thể sử dụng vào 1/1 năm kế tiếp
+- Ví dụ: Nhân viên join ngày 13/08/2021, đến 13/08/2024 là đủ 3 năm nhưng được cộng phép thâm niên vào 01/01/2025
+
+7. QUY TẮC TÍNH PHÉP KHI THĂNG CHỨC/THUYÊN CHUYỂN
+- Nếu ngày thăng chức/thuyên chuyển TRƯỚC ngày 16: phép năm tính theo chức danh MỚI
+- Nếu ngày thăng chức/thuyên chuyển TỪ ngày 16 trở về sau: phép năm tính theo chức danh CŨ
+
+Ví dụ cụ thể:
+- Nhân viên từ Staff lên Manager, thăng chức ngày 20/3 (từ ngày 16 trở về sau)
+- Phép năm tại tháng 3: vẫn tính theo phép của Staff
+- Phép năm tại tháng 4: tính theo công thức mới
+  + Phép năm tháng 4 = (12/12 * 3) + (15/12 * 9)
+  + Trong đó: 3 tháng đầu (1,2,3) tính theo Staff, 9 tháng sau (4-12) tính theo Manager
+
+8. QUY TẮC LÀM TRÒN
+- Phép năm được làm tròn vào cuối năm khi kết chuyển phép và khi nghỉ việc
+- Hàng tháng thì KHÔNG làm tròn
+- Quy tắc làm tròn:
+  + < 0.5: làm tròn xuống 0
+  + = 0.5: giữ nguyên 0.5  
+  + > 0.5: làm tròn lên 1
+
+9. NGÀY PHÉP THEO CHỨC VỤ (tham khảo)
+- Staff: 12 ngày/năm
+- Manager: 15 ngày/năm
+- Director: 18 ngày/năm
