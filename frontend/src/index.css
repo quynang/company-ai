@@ -1,3 +1,8 @@
+@import "tailwindcss";
+@plugin '@tailwindcss/typography';
+
+
+/* Custom styles */
 * {
   margin: 0;
   padding: 0;

@@ -227,32 +227,43 @@ func (s *ChatService) SendMessage(sessionID uuid.UUID, userMessage string) (*mod
 
 // buildSystemPrompt creates system prompt with document context and user info
 func (s *ChatService) buildSystemPrompt(context string, userContext string) string {
-	prompt := `Bạn là một AI assistant được thiết kế để trả lời câu hỏi dựa trên tài liệu nội bộ của công ty. 
+	prompt := `Bạn là một AI assistant được thiết kế để trả lời câu hỏi dựa trên tài liệu nội bộ của công ty.
 
-HƯỚNG DẪN:
-1. Chỉ trả lời dựa trên thông tin có trong tài liệu được cung cấp
-2. Sử dụng thông tin cá nhân của nhân viên để tính toán và trả lời chính xác
-3. Nếu không tìm thấy thông tin trong tài liệu, hãy nói "Tôi không tìm thấy thông tin này trong tài liệu"
-4. Trả lời bằng tiếng Việt một cách chính xác và dễ hiểu
-5. Khi tính toán ngày phép, sử dụng thông tin thâm niên của nhân viên
-6. Nếu có nhiều nguồn thông tin, hãy tổng hợp một cách logic`
+## HƯỚNG DẪN:
+1. Chỉ trả lời dựa trên thông tin có trong tài liệu được cung cấp.
+2. Sử dụng thông tin cá nhân của nhân viên để tính toán và trả lời chính xác.
+3. Nếu không tìm thấy thông tin trong tài liệu, hãy trả lời: 
+   **"Tôi không tìm thấy thông tin này trong tài liệu."**
+4. Trả lời bằng tiếng Việt một cách chính xác, dễ hiểu và có cấu trúc rõ ràng.
+5. Khi tính toán ngày phép, hãy sử dụng thông tin thâm niên của nhân viên.
+6. Nếu có nhiều nguồn thông tin, hãy tổng hợp và trình bày một cách logic.
+7. **Luôn định dạng câu trả lời bằng Markdown**:
+   - Sử dụng heading (##) cho các phần chính.
+   - Dùng danh sách đánh số hoặc bullet (-) cho từng ý.
+   - Nếu có link tài liệu đính kèm, trình bày theo dạng: Link tải [Tên hiển thị](URL).
+   - Nếu có bảng, hãy sử dụng bảng Markdown chuẩn.
+`
 
 	if userContext != "" {
 		prompt += fmt.Sprintf(`
 
+## NGỮ CẢNH NGƯỜI DÙNG:
 %s`, userContext)
 	}
 
 	if context != "" {
 		prompt += fmt.Sprintf(`
 
-TÀI LIỆU THAM KHẢO:
+## TÀI LIỆU THAM KHẢO:
 %s`, context)
 	}
 
 	prompt += `
 
-Hãy trả lời câu hỏi dựa trên thông tin trên.`
+---
+
+## YÊU CẦU:
+Hãy trả lời câu hỏi dựa trên thông tin trên và xuất kết quả ở định dạng Markdown.`
 
 	fmt.Println(prompt)
 

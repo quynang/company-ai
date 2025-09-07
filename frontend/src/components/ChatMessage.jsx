@@ -1,6 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { Bot, User, HelpCircle, Send } from 'lucide-react';
+import MarkdownRenderer from './MarkdownRenderer';
 import './ChatMessage.css';
 
 const ChatMessage = ({ message, isLoading = false, onActionClick }) => {
@@ -64,7 +65,11 @@ const ChatMessage = ({ message, isLoading = false, onActionClick }) => {
       <div className="message-content">
         <div className="message-bubble">
           <div className="message-text">
-            {message.content}
+            {isAssistant ? (
+              <MarkdownRenderer content={message.content} />
+            ) : (
+              message.content
+            )}
           </div>
         </div>
         {message.action_card && (

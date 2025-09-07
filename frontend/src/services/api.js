@@ -3,8 +3,8 @@ import axios from 'axios';
 // Get local IP address for API calls
 const getLocalIP = () => {
   // Try to get from environment variable first
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
   }
   
   // Get current hostname (IP address when accessed from other devices)

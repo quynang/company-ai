@@ -85,65 +85,6 @@
   background: transparent !important;
 }
 
-/* Force message text to be visible */
-.message-text {
-  visibility: visible !important;
-  opacity: 1 !important;
-  display: block !important;
-  color: inherit !important;
-  background: transparent !important;
-  text-shadow: none !important;
-  -webkit-text-fill-color: currentColor !important;
-  font-weight: normal !important;
-  font-style: normal !important;
-  text-decoration: none !important;
-  text-transform: none !important;
-  filter: none !important;
-  transform: none !important;
-  clip: auto !important;
-  overflow: visible !important;
-  position: static !important;
-  z-index: auto !important;
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-  white-space: pre-wrap !important;
-  word-wrap: break-word !important;
-  overflow-wrap: break-word !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100% !important;
-  min-height: 20px !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  font-family: inherit !important;
-  text-rendering: auto !important;
-  -webkit-font-smoothing: auto !important;
-  -moz-osx-font-smoothing: auto !important;
-  direction: ltr !important;
-  unicode-bidi: normal !important;
-}
-
-.message-text {
-  line-height: 1.5;
-  white-space: pre-wrap;
-  color: inherit;
-  font-size: 14px;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  margin: 0;
-  padding: 0;
-  display: block;
-  width: 100%;
-  min-height: 20px;
-  max-width: 100%;
-  box-sizing: border-box;
-  overflow: visible;
-  position: relative;
-  z-index: 1;
-  font-family: inherit;
-  text-shadow: none;
-  -webkit-text-fill-color: currentColor;
-}
 
 .message-time {
   font-size: 12px;

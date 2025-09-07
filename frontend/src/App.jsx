@@ -187,9 +187,9 @@ function App() {
   return (
     <div className="app">
       {error && (
-        <div className="error-banner">
+        <div className="error-banner bg-red-500 text-white p-4 rounded-lg shadow-lg">
           <span>{error}</span>
-          <button onClick={() => setError(null)}>&times;</button>
+          <button onClick={() => setError(null)} className="ml-2 hover:bg-red-600 px-2 py-1 rounded">&times;</button>
         </div>
       )}
       
