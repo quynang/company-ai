@@ -12,7 +12,7 @@ type Server struct {
 	handlers *Handlers
 }
 
-func NewServer(docService *services.DocumentService, vecService *services.VectorService, chatService *services.ChatService, userService *services.UserService, ticketService *services.TicketService) *Server {
+func NewServer(docService *services.DocumentService, vecService *services.VectorService, chatService *services.ChatService, userService *services.UserService, ticketService *services.TicketService, categoryService *services.CategoryService) *Server {
 	// Set Gin mode
 	gin.SetMode(gin.ReleaseMode)
 
@@ -21,7 +21,7 @@ func NewServer(docService *services.DocumentService, vecService *services.Vector
 	// CORS middleware - must be first, before any other middleware
 	config := cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:3000", "http://0.0.0.0:3000", "http://10.67.21.180:3000", "http://192.168.1.100:3000", "*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With", "Access-Control-Request-Method", "Access-Control-Request-Headers"},
 		AllowCredentials: false,
 		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers"},
@@ -34,7 +34,7 @@ func NewServer(docService *services.DocumentService, vecService *services.Vector
 	router.Use(gin.Recovery())
 
 	// Initialize handlers
-	handlers := NewHandlers(docService, vecService, chatService, userService, ticketService)
+	handlers := NewHandlers(docService, vecService, chatService, userService, ticketService, categoryService)
 
 	server := &Server{
 		router:   router,
@@ -62,6 +62,8 @@ func (s *Server) setupRoutes() {
 		documents.DELETE("/:id", s.handlers.DeleteDocument)
 		documents.POST("/:id/reembed", s.handlers.ReembedDocument)
 		documents.POST("/semantic-reembed", s.handlers.ReembedWithSemanticChunking)
+		documents.PUT("/:id/categories", s.handlers.UpdateDocumentCategories)
+		documents.GET("/:id/categories", s.handlers.GetDocumentCategories)
 	}
 
 	// Search routes
@@ -87,6 +89,17 @@ func (s *Server) setupRoutes() {
 		chat.GET("/sessions/:id", s.handlers.GetChatSession)
 		chat.DELETE("/sessions/:id", s.handlers.DeleteChatSession)
 		chat.POST("/sessions/:id/messages", s.handlers.SendMessage)
+	}
+
+	// Category routes
+	categories := api.Group("/categories")
+	{
+		categories.POST("", s.handlers.CreateCategory)
+		categories.GET("", s.handlers.GetCategories)
+		categories.GET("/:id", s.handlers.GetCategory)
+		categories.PUT("/:id", s.handlers.UpdateCategory)
+		categories.DELETE("/:id", s.handlers.DeleteCategory)
+		categories.GET("/:id/documents", s.handlers.GetDocumentsByCategory)
 	}
 
 	// Ticket routes

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Bot, Settings } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
+import { categoryAPI } from '../services/api';
 import './ChatWindow.css';
 
 const ChatWindow = ({ 
@@ -11,9 +12,12 @@ const ChatWindow = ({
   isLoading = false,
   onToggleSidebar,
   onSwitchToAdmin,
-  setMessages
+  setMessages,
+  onCreateSessionWithCategory
 }) => {
   const [isTyping, setIsTyping] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -24,12 +28,49 @@ const ChatWindow = ({
     scrollToBottom();
   }, [messages, isTyping]);
 
+  useEffect(() => {
+    if (!session) {
+      loadCategories();
+    }
+  }, [session]);
+
+  const loadCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+      const response = await categoryAPI.getCategories();
+      setCategories(response.categories || []);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  const handleCategoryClick = async (categoryId) => {
+    if (onCreateSessionWithCategory) {
+      await onCreateSessionWithCategory(categoryId);
+    }
+  };
+
   const handleSendMessage = async (message) => {
     setIsTyping(true);
     try {
       await onSendMessage(message);
     } finally {
       setIsTyping(false);
+    }
+  };
+
+  const handleWelcomeInput = async (message) => {
+    // Create a new session without category when user sends message from welcome screen
+    if (!session && message.trim()) {
+      setIsTyping(true);
+      try {
+        // First create a new session, then send the message
+        await onSendMessage(message);
+      } finally {
+        setIsTyping(false);
+      }
     }
   };
 
@@ -62,23 +103,53 @@ const ChatWindow = ({
       <div className="chat-messages">
         {!session ? (
           <div className="welcome-message">
-            <Bot size={64} className="welcome-icon" />
-            <h2>Chào mừng đến với Company AI Assistant!</h2>
-            <p>Tôi là trợ lý AI thông minh, sẵn sàng giúp bạn giải đáp thắc mắc về các chính sách và quy định của công ty.</p>
-            <div className="welcome-features">
-              <div className="feature">
-                <span className="feature-icon">📚</span>
-                <span>Tra cứu chính sách công ty</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">📝</span>
-                <span>Hướng dẫn quy trình làm việc</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">🏖️</span>
-                <span>Tính toán ngày phép</span>
+            <h2>Nhận trợ giúp về <span className="highlight">mọi thứ</span> trên Company AI</h2>
+            <div className="welcome-subtitle">
+              <p>Đặt câu hỏi. Tìm câu trả lời.</p>
+              <p>Quay lại với hoạt động làm việc.</p>
+            </div>
+            
+            {/* Search input field */}
+            <div className="welcome-search-section">
+              <div className="search-input-container">
+                <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Bạn cần trợ giúp về vấn đề gì?"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && e.target.value.trim()) {
+                      handleWelcomeInput(e.target.value.trim());
+                      e.target.value = '';
+                    }
+                  }}
+                  disabled={isLoading || isTyping}
+                />
               </div>
             </div>
+            
+            {/* Suggested questions */}
+            {categories.length > 0 && (
+              <div className="suggested-questions">
+                <h3>Hỏi về chuyên mục nào?</h3>
+                <div className="questions-grid">
+                  {categories.map((category) => (
+                    <button
+                      key={category.id}
+                      className="question-card"
+                      onClick={() => handleCategoryClick(category.id)}
+                      disabled={categoriesLoading}
+                    >
+                      <span className="question-icon">💡</span>
+                      <span className="question-text">{category.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : messages.length === 0 ? (
           <div className="empty-chat">
@@ -121,15 +192,13 @@ const ChatWindow = ({
         )}
       </div>
 
-      <ChatInput
-        onSendMessage={handleSendMessage}
-        disabled={!session || isLoading || isTyping}
-        placeholder={
-          !session 
-            ? "Vui lòng chọn hoặc tạo cuộc trò chuyện mới..."
-            : "Nhập câu hỏi của bạn..."
-        }
-      />
+      {session && (
+        <ChatInput
+          onSendMessage={handleSendMessage}
+          disabled={isLoading || isTyping}
+          placeholder="Nhập câu hỏi của bạn..."
+        />
+      )}
     </div>
   );
 };

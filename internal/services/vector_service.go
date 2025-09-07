@@ -89,6 +89,11 @@ func (s *VectorService) ChunkAndEmbedDocument(doc *models.Document) error {
 
 // SearchSimilarChunks finds document chunks similar to query
 func (s *VectorService) SearchSimilarChunks(query string, limit int) ([]models.DocumentChunk, error) {
+	return s.SearchSimilarChunksWithCategory(query, limit, nil)
+}
+
+// SearchSimilarChunksWithCategory finds document chunks similar to query, optionally filtered by category
+func (s *VectorService) SearchSimilarChunksWithCategory(query string, limit int, categoryID *uuid.UUID) ([]models.DocumentChunk, error) {
 	// Generate embedding for query
 	queryEmbedding, err := s.geminiClient.GenerateEmbedding(query)
 	if err != nil {
@@ -98,16 +103,27 @@ func (s *VectorService) SearchSimilarChunks(query string, limit int) ([]models.D
 	// Convert embedding to string for SQL query
 	embeddingStr := s.embeddingToString(queryEmbedding)
 
-	// Search for similar chunks using cosine similarity - exclude embedding field from select
+	// Build SQL query with optional category filter
 	sql := `
 		SELECT dc.id, dc.document_id, dc.content, dc.chunk_index, dc.created_at, dc.updated_at,
 		       d.name as document_name
 		FROM document_chunks dc
 		JOIN documents d ON dc.document_id = d.id
 		WHERE d.deleted_at IS NULL
-		ORDER BY dc.embedding <=> ?::vector 
-		LIMIT ?
 	`
+
+	var args []interface{}
+
+	if categoryID != nil {
+		sql += ` AND EXISTS (
+			SELECT 1 FROM document_categories dc_rel 
+			WHERE dc_rel.document_id = d.id AND dc_rel.category_id = ?
+		)`
+		args = append(args, categoryID.String())
+	}
+
+	sql += ` ORDER BY dc.embedding <=> ?::vector LIMIT ?`
+	args = append(args, embeddingStr, limit)
 
 	type ChunkResult struct {
 		ID           string    `json:"id"`
@@ -120,7 +136,7 @@ func (s *VectorService) SearchSimilarChunks(query string, limit int) ([]models.D
 	}
 
 	var results []ChunkResult
-	if err := s.db.Raw(sql, embeddingStr, limit).Scan(&results).Error; err != nil {
+	if err := s.db.Raw(sql, args...).Scan(&results).Error; err != nil {
 		return nil, fmt.Errorf("failed to search similar chunks: %w", err)
 	}
 

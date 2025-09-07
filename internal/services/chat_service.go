@@ -29,12 +29,18 @@ func NewChatService(vectorService *VectorService, userService *UserService, gemi
 
 // CreateSession creates a new chat session
 func (s *ChatService) CreateSession(name string, userID *uuid.UUID) (*models.ChatSession, error) {
+	return s.CreateSessionWithCategory(name, userID, nil)
+}
+
+// CreateSessionWithCategory creates a new chat session with category filter
+func (s *ChatService) CreateSessionWithCategory(name string, userID *uuid.UUID, categoryID *uuid.UUID) (*models.ChatSession, error) {
 	session := &models.ChatSession{
-		ID:        uuid.New(),
-		UserID:    userID,
-		Name:      name,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:         uuid.New(),
+		UserID:     userID,
+		CategoryID: categoryID,
+		Name:       name,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 	}
 
 	if err := s.db.Create(session).Error; err != nil {
@@ -47,7 +53,7 @@ func (s *ChatService) CreateSession(name string, userID *uuid.UUID) (*models.Cha
 // GetSession retrieves a chat session
 func (s *ChatService) GetSession(sessionID uuid.UUID) (*models.ChatSession, error) {
 	var session models.ChatSession
-	if err := s.db.First(&session, "id = ?", sessionID).Error; err != nil {
+	if err := s.db.Preload("Category").First(&session, "id = ?", sessionID).Error; err != nil {
 		return nil, err
 	}
 	return &session, nil
@@ -65,7 +71,7 @@ func (s *ChatService) GetSessionMessages(sessionID uuid.UUID) ([]models.ChatMess
 // GetAllSessions retrieves all chat sessions
 func (s *ChatService) GetAllSessions() ([]models.ChatSession, error) {
 	var sessions []models.ChatSession
-	if err := s.db.Order("updated_at DESC").Find(&sessions).Error; err != nil {
+	if err := s.db.Preload("Category").Order("updated_at DESC").Find(&sessions).Error; err != nil {
 		return nil, err
 	}
 	return sessions, nil
@@ -97,8 +103,14 @@ func (s *ChatService) SendMessageWithResponse(sessionID uuid.UUID, userMessage s
 		return nil, fmt.Errorf("failed to save user message: %w", err)
 	}
 
-	// Search for relevant document chunks
-	relevantChunks, err := s.vectorService.SearchSimilarChunks(userMessage, 5)
+	// Get session to check for category filter
+	session, err := s.GetSession(sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get session: %w", err)
+	}
+
+	// Search for relevant document chunks with category filter
+	relevantChunks, err := s.vectorService.SearchSimilarChunksWithCategory(userMessage, 5, session.CategoryID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search relevant chunks: %w", err)
 	}
@@ -127,8 +139,7 @@ func (s *ChatService) SendMessageWithResponse(sessionID uuid.UUID, userMessage s
 
 	// Get user context if session has user
 	var userContext string
-	session, _ := s.GetSession(sessionID)
-	if session != nil && session.UserID != nil {
+	if session.UserID != nil {
 		if user, err := s.userService.GetUser(*session.UserID); err == nil {
 			userContext, _ = s.userService.GetUserContext(user)
 		}

@@ -20,7 +20,9 @@ func Initialize(databaseURL string) (*gorm.DB, error) {
 
 	// Auto migrate tables
 	err = db.AutoMigrate(
+		&models.Category{},
 		&models.Document{},
+		&models.DocumentCategory{},
 		&models.DocumentChunk{},
 		&models.User{},
 		&models.ChatSession{},

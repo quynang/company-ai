@@ -7,17 +7,35 @@ import (
 	"gorm.io/gorm"
 )
 
+type Category struct {
+	ID          uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Name        string         `gorm:"not null;unique" json:"name"`
+	Description string         `gorm:"type:text" json:"description"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
 type Document struct {
 	ID          uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	Name        string         `gorm:"not null" json:"name"`
 	Content     string         `gorm:"type:text" json:"content"`
 	Type        string         `gorm:"not null" json:"type"` // pdf, docx, txt
 	Size        int64          `json:"size"`
+	Categories  []Category     `gorm:"many2many:document_categories;" json:"categories,omitempty"`
 	UploadedAt  time.Time      `json:"uploaded_at"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	ChunksCount int            `gorm:"-" json:"chunks_count"` // Virtual field for chunks count
+}
+
+type DocumentCategory struct {
+	DocumentID uuid.UUID `gorm:"type:uuid;primary_key" json:"document_id"`
+	CategoryID uuid.UUID `gorm:"type:uuid;primary_key" json:"category_id"`
+	Document   Document  `gorm:"foreignKey:DocumentID" json:"document,omitempty"`
+	Category   Category  `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type DocumentChunk struct {
@@ -45,12 +63,14 @@ type User struct {
 }
 
 type ChatSession struct {
-	ID        uuid.UUID  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	UserID    *uuid.UUID `gorm:"type:uuid" json:"user_id"` // Optional user association
-	User      *User      `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	Name      string     `gorm:"not null" json:"name"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID         uuid.UUID  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	UserID     *uuid.UUID `gorm:"type:uuid" json:"user_id"` // Optional user association
+	User       *User      `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	CategoryID *uuid.UUID `gorm:"type:uuid" json:"category_id"` // Optional category filter
+	Category   *Category  `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
+	Name       string     `gorm:"not null" json:"name"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
 }
 
 type ChatMessage struct {

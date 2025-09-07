@@ -27,9 +27,10 @@ func main() {
 	userService := services.NewUserService(db)
 	chatService := services.NewChatService(vectorService, userService, cfg.GeminiAPIKey)
 	ticketService := services.NewTicketService(db)
+	categoryService := services.NewCategoryService(db)
 
 	// Initialize API server
-	server := api.NewServer(documentService, vectorService, chatService, userService, ticketService)
+	server := api.NewServer(documentService, vectorService, chatService, userService, ticketService, categoryService)
 
 	// Start server
 	log.Printf("Starting server on port %s", cfg.Port)

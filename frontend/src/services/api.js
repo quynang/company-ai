@@ -31,10 +31,11 @@ const api = axios.create({
 // Chat API functions
 export const chatAPI = {
   // Create a new chat session
-  createSession: async (name, userID = null) => {
+  createSession: async (name, userID = null, categoryID = null) => {
     const response = await api.post('/chat/sessions', {
       name,
       user_id: userID,
+      category_id: categoryID,
     });
     return response.data;
   },
@@ -102,9 +103,14 @@ export const documentAPI = {
   },
 
   // Upload a document
-  uploadDocument: async (file) => {
+  uploadDocument: async (file, categoryIds = []) => {
     const formData = new FormData();
     formData.append('file', file);
+    
+    // Add category IDs to form data
+    categoryIds.forEach(id => {
+      formData.append('category_ids', id);
+    });
     
     const response = await api.post('/documents/upload', formData, {
       headers: {
@@ -115,10 +121,11 @@ export const documentAPI = {
   },
 
   // Create document from text content
-  uploadDocumentFromText: async (name, content) => {
+  uploadDocumentFromText: async (name, content, categoryIds = []) => {
     const response = await api.post('/documents/upload', {
       name: name,
-      content: content
+      content: content,
+      category_ids: categoryIds
     });
     return response.data;
   },
@@ -153,6 +160,65 @@ export const documentAPI = {
   // Search documents
   searchDocuments: async (query, limit = 10) => {
     const response = await api.get(`/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Update document categories
+  updateDocumentCategories: async (id, categoryIds) => {
+    const response = await api.put(`/documents/${id}/categories`, {
+      category_ids: categoryIds
+    });
+    return response.data;
+  },
+
+  // Get document categories
+  getDocumentCategories: async (id) => {
+    const response = await api.get(`/documents/${id}/categories`);
+    return response.data;
+  },
+};
+
+// Category API functions
+export const categoryAPI = {
+  // Get all categories
+  getCategories: async () => {
+    const response = await api.get('/categories');
+    return response.data;
+  },
+
+  // Get a specific category
+  getCategory: async (id) => {
+    const response = await api.get(`/categories/${id}`);
+    return response.data;
+  },
+
+  // Create a new category
+  createCategory: async (name, description = '') => {
+    const response = await api.post('/categories', {
+      name: name,
+      description: description
+    });
+    return response.data;
+  },
+
+  // Update a category
+  updateCategory: async (id, name, description = '') => {
+    const response = await api.put(`/categories/${id}`, {
+      name: name,
+      description: description
+    });
+    return response.data;
+  },
+
+  // Delete a category
+  deleteCategory: async (id) => {
+    const response = await api.delete(`/categories/${id}`);
+    return response.data;
+  },
+
+  // Get documents by category
+  getDocumentsByCategory: async (id) => {
+    const response = await api.get(`/categories/${id}/documents`);
     return response.data;
   },
 };

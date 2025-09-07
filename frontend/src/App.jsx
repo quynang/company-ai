@@ -77,6 +77,27 @@ function App() {
     }
   };
 
+  const createNewSessionWithCategory = async (categoryId) => {
+    try {
+      setIsLoading(true);
+      const sessionName = `Cuộc trò chuyện ${new Date().toLocaleString('vi-VN')}`;
+      const response = await chatAPI.createSession(sessionName, null, categoryId);
+      
+      if (response.session) {
+        const newSession = response.session;
+        setSessions(prev => [newSession, ...prev]);
+        setCurrentSession(newSession);
+        setMessages([]);
+        setError(null);
+      }
+    } catch (error) {
+      console.error('Error creating session with category:', error);
+      setError('Không thể tạo cuộc trò chuyện mới');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const selectSession = (session) => {
     setCurrentSession(session);
     if (window.innerWidth <= 768) {
@@ -108,10 +129,30 @@ function App() {
   };
 
   const sendMessage = async (messageText) => {
-    if (!currentSession) {
+    let sessionToUse = currentSession;
+    
+    if (!sessionToUse) {
       // Create new session if none exists
-      await createNewSession();
-      return;
+      try {
+        setIsLoading(true);
+        const sessionName = `Cuộc trò chuyện ${new Date().toLocaleString('vi-VN')}`;
+        const response = await chatAPI.createSession(sessionName);
+        
+        if (response.session) {
+          const newSession = response.session;
+          setSessions(prev => [newSession, ...prev]);
+          setCurrentSession(newSession);
+          setMessages([]);
+          setError(null);
+          sessionToUse = newSession; // Use the newly created session
+        }
+      } catch (error) {
+        console.error('Error creating session:', error);
+        setError('Không thể tạo cuộc trò chuyện mới');
+        return;
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     try {
@@ -126,7 +167,7 @@ function App() {
       setMessages(prev => [...prev, userMessage]);
       
       // Send message to backend
-      const response = await chatAPI.sendMessage(currentSession.id, messageText);
+      const response = await chatAPI.sendMessage(sessionToUse.id, messageText);
       
       // Debug logging
       console.log('Backend response:', response);
@@ -152,7 +193,7 @@ function App() {
         // Update session in list (move to top)
         setSessions(prev => {
           const updated = prev.map(s => 
-            s.id === currentSession.id 
+            s.id === sessionToUse.id 
               ? { ...s, updated_at: new Date().toISOString() }
               : s
           );
@@ -216,6 +257,7 @@ function App() {
               onToggleSidebar={toggleSidebar}
               onSwitchToAdmin={switchToAdmin}
               setMessages={setMessages}
+              onCreateSessionWithCategory={createNewSessionWithCategory}
             />
           ) : (
             <AdminDashboard />

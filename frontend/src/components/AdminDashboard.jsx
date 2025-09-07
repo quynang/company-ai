@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, RefreshCw, Trash2, FileText, Plus, Search, Save, X, Brain, Settings } from 'lucide-react';
+import { Edit, RefreshCw, Trash2, FileText, Plus, Search, Save, X, Brain, Settings, Tag } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 import SemanticChunkingConfig from './SemanticChunkingConfig';
+import CategoryManager from './CategoryManager';
+import CategoryMultiSelect from './CategoryMultiSelect';
 import { documentAPI } from '../services/api';
 import './AdminDashboard.css';
 
@@ -14,7 +16,10 @@ const AdminDashboard = () => {
   const [editContent, setEditContent] = useState('');
   const [newDocName, setNewDocName] = useState('');
   const [newDocContent, setNewDocContent] = useState('');
+  const [newDocCategories, setNewDocCategories] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedDocCategories, setSelectedDocCategories] = useState([]);
+  const [isUpdatingCategories, setIsUpdatingCategories] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
     title: '',
@@ -24,6 +29,7 @@ const AdminDashboard = () => {
   });
   const [semanticConfigOpen, setSemanticConfigOpen] = useState(false);
   const [semanticConfig, setSemanticConfig] = useState(null);
+  const [activeTab, setActiveTab] = useState('documents'); // 'documents' or 'categories'
 
   useEffect(() => {
     fetchDocuments();
@@ -41,6 +47,33 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadDocumentCategories = async (documentId) => {
+    try {
+      const response = await documentAPI.getDocumentCategories(documentId);
+      setSelectedDocCategories(response.categories?.map(cat => cat.id) || []);
+    } catch (error) {
+      console.error('Error loading document categories:', error);
+      setSelectedDocCategories([]);
+    }
+  };
+
+  const handleUpdateDocumentCategories = async () => {
+    if (!selectedDoc) return;
+    
+    setIsUpdatingCategories(true);
+    try {
+      await documentAPI.updateDocumentCategories(selectedDoc.id, selectedDocCategories);
+      alert('Document categories updated successfully!');
+      // Reload documents to refresh the data
+      fetchDocuments();
+    } catch (error) {
+      console.error('Error updating document categories:', error);
+      alert('Failed to update document categories');
+    } finally {
+      setIsUpdatingCategories(false);
+    }
+  };
+
   const handleCreateNew = async () => {
     if (!newDocName.trim() || !newDocContent.trim()) {
       alert('Vui lòng nhập tên và nội dung document');
@@ -48,11 +81,12 @@ const AdminDashboard = () => {
     }
 
     try {
-      // Create a new document with content
-      const result = await documentAPI.uploadDocumentFromText(newDocName, newDocContent);
+      // Create a new document with content and categories
+      const result = await documentAPI.uploadDocumentFromText(newDocName, newDocContent, newDocCategories);
       alert('Tạo document thành công! Document đang được xử lý embedding...');
       setNewDocName('');
       setNewDocContent('');
+      setNewDocCategories([]);
       setIsCreating(false);
       fetchDocuments();
     } catch (error) {
@@ -186,9 +220,28 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="dashboard-layout">
-        {/* Sidebar - Documents List */}
-        <div className="sidebar">
+      {/* Tab Navigation */}
+      <div className="tab-navigation">
+        <button
+          className={`tab-button ${activeTab === 'documents' ? 'active' : ''}`}
+          onClick={() => setActiveTab('documents')}
+        >
+          <FileText size={16} />
+          Documents
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'categories' ? 'active' : ''}`}
+          onClick={() => setActiveTab('categories')}
+        >
+          <Tag size={16} />
+          Categories
+        </button>
+      </div>
+
+      {activeTab === 'documents' ? (
+        <div className="dashboard-layout">
+          {/* Sidebar - Documents List */}
+          <div className="sidebar">
           <div className="search-section">
             <div className="search-box">
               <Search size={20} />
@@ -209,7 +262,10 @@ const AdminDashboard = () => {
                 <div 
                   key={doc.id} 
                   className={`document-item ${selectedDoc?.id === doc.id ? 'active' : ''}`}
-                  onClick={() => setSelectedDoc(doc)}
+                  onClick={() => {
+                    setSelectedDoc(doc);
+                    loadDocumentCategories(doc.id);
+                  }}
                 >
                   <div className="document-icon">
                     <FileText size={16} />
@@ -219,6 +275,18 @@ const AdminDashboard = () => {
                     <p className="document-description">
                       {doc.content.substring(0, 100)}...
                     </p>
+                    {doc.categories && doc.categories.length > 0 && (
+                      <div className="document-categories mt-2">
+                        {doc.categories.map((category) => (
+                          <span
+                            key={category.id}
+                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-1 mb-1"
+                          >
+                            {category.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <span className="document-date">
                       {new Date(doc.created_at).toLocaleDateString('vi-VN')}
                     </span>
@@ -250,6 +318,12 @@ const AdminDashboard = () => {
                     value={newDocName}
                     onChange={(e) => setNewDocName(e.target.value)}
                     placeholder="Nhập tên document"
+                  />
+                </div>
+                <div className="form-group">
+                  <CategoryMultiSelect
+                    selectedCategoryIds={newDocCategories}
+                    onCategoryChange={setNewDocCategories}
                   />
                 </div>
                 <div className="form-group">
@@ -319,6 +393,30 @@ const AdminDashboard = () => {
               </div>
 
               <div className="editor-content">
+                {/* Category Management Section */}
+                <div className="category-management mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Tag size={20} />
+                    Document Categories
+                  </h3>
+                  <div className="mb-4">
+                    <CategoryMultiSelect
+                      selectedCategoryIds={selectedDocCategories}
+                      onCategoryChange={setSelectedDocCategories}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleUpdateDocumentCategories}
+                      disabled={isUpdatingCategories}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      <Save size={16} />
+                      {isUpdatingCategories ? 'Updating...' : 'Update Categories'}
+                    </button>
+                  </div>
+                </div>
+
                 {editingDoc === selectedDoc.id ? (
                   <div className="edit-mode">
                     <textarea
@@ -372,6 +470,9 @@ const AdminDashboard = () => {
           )}
         </div>
       </div>
+      ) : (
+        <CategoryManager />
+      )}
 
       {/* Confirm Dialog */}
       <ConfirmDialog

@@ -10,7 +10,7 @@ const SessionList = ({
   onNewSession, 
   onDeleteSession,
   onSwitchToAdmin,
-  isLoading = false 
+  isLoading = false
 }) => {
   const formatSessionTime = (dateString) => {
     try {
@@ -50,6 +50,7 @@ const SessionList = ({
           </button>
         </div>
       </div>
+
 
       <div className="sessions-container">
         {isLoading ? (
