@@ -14,20 +14,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  app:
-    build: .
-    container_name: company_ai_app
-    environment:
-      - PORT=8080
-      - DATABASE_URL=postgres://postgres:password@postgres:5432/company_ai?sslmode=disable
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-    ports:
-      - "0.0.0.0:8082:8080"
-    depends_on:
-      - postgres
-    restart: unless-stopped
-    volumes:
-      - ./uploads:/app/uploads
-
 volumes:
   postgres_data:
+

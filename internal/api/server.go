@@ -61,6 +61,7 @@ func (s *Server) setupRoutes() {
 		documents.PUT("/:id", s.handlers.UpdateDocument)
 		documents.DELETE("/:id", s.handlers.DeleteDocument)
 		documents.POST("/:id/reembed", s.handlers.ReembedDocument)
+		documents.POST("/semantic-reembed", s.handlers.ReembedWithSemanticChunking)
 	}
 
 	// Search routes

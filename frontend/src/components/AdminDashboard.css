@@ -16,6 +16,12 @@
   flex-shrink: 0;
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .dashboard-header h1 {
   font-size: 24px;
   font-weight: 700;
@@ -47,6 +53,26 @@
 .create-new-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.config-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.config-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .dashboard-layout {
@@ -409,6 +435,14 @@
 
 .reembed-btn:hover {
   background: #e8f5e8;
+}
+
+.semantic-btn {
+  color: #8b5cf6;
+}
+
+.semantic-btn:hover {
+  background: #f3f0ff;
 }
 
 .delete-btn {

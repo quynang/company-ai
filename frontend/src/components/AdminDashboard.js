@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, RefreshCw, Trash2, FileText, Plus, Search, Save, X } from 'lucide-react';
+import { Edit, RefreshCw, Trash2, FileText, Plus, Search, Save, X, Brain, Settings } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
+import SemanticChunkingConfig from './SemanticChunkingConfig';
 import { documentAPI } from '../services/api';
 import './AdminDashboard.css';
 
@@ -21,6 +22,8 @@ const AdminDashboard = () => {
     onConfirm: null,
     type: 'danger'
   });
+  const [semanticConfigOpen, setSemanticConfigOpen] = useState(false);
+  const [semanticConfig, setSemanticConfig] = useState(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -122,6 +125,34 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleSemanticReembed = async (docId) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Xác nhận Semantic Re-embedding',
+      message: 'Bạn có chắc muốn chạy lại embedding với semantic chunking cho document này?',
+      onConfirm: () => performSemanticReembed(docId),
+      type: 'warning'
+    });
+  };
+
+  const performSemanticReembed = async (docId) => {
+    setConfirmDialog({ isOpen: false, title: '', message: '', onConfirm: null, type: 'danger' });
+
+    try {
+      await documentAPI.reembedWithSemanticChunking(docId, semanticConfig);
+      alert('Đang chạy lại embedding với semantic chunking...');
+      fetchDocuments();
+    } catch (error) {
+      console.error('Semantic re-embedding error:', error);
+      alert('Có lỗi xảy ra khi chạy lại semantic embedding');
+    }
+  };
+
+  const handleSemanticConfigSave = (config) => {
+    setSemanticConfig(config);
+    alert('Cấu hình semantic chunking đã được lưu!');
+  };
+
   const filteredDocuments = documents.filter(doc =>
     doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     doc.content.toLowerCase().includes(searchTerm.toLowerCase())
@@ -136,13 +167,23 @@ const AdminDashboard = () => {
       <div className="dashboard-header">
         <h1>Admin Dashboard</h1>
         <p>Quản lý documents và embedding</p>
-        <button 
-          onClick={() => setIsCreating(true)} 
-          className="create-new-btn"
-        >
-          <Plus size={16} />
-          Tạo Document Mới
-        </button>
+        <div className="header-actions">
+          <button 
+            onClick={() => setSemanticConfigOpen(true)} 
+            className="config-btn"
+            title="Cấu hình Semantic Chunking"
+          >
+            <Settings size={16} />
+            Cấu hình Semantic
+          </button>
+          <button 
+            onClick={() => setIsCreating(true)} 
+            className="create-new-btn"
+          >
+            <Plus size={16} />
+            Tạo Document Mới
+          </button>
+        </div>
       </div>
 
       <div className="dashboard-layout">
@@ -253,10 +294,18 @@ const AdminDashboard = () => {
                   <button
                     onClick={() => handleReembed(selectedDoc.id)}
                     className="action-btn reembed-btn"
-                    title="Chạy lại embedding"
+                    title="Chạy lại embedding (Legacy)"
                   >
                     <RefreshCw size={16} />
                     Re-embed
+                  </button>
+                  <button
+                    onClick={() => handleSemanticReembed(selectedDoc.id)}
+                    className="action-btn semantic-btn"
+                    title="Chạy lại embedding với Semantic Chunking"
+                  >
+                    <Brain size={16} />
+                    Semantic Re-embed
                   </button>
                   <button
                     onClick={() => handleDelete(selectedDoc.id)}
@@ -332,6 +381,14 @@ const AdminDashboard = () => {
         onConfirm={confirmDialog.onConfirm}
         onCancel={closeConfirmDialog}
         type={confirmDialog.type}
+      />
+
+      {/* Semantic Chunking Config Modal */}
+      <SemanticChunkingConfig
+        isOpen={semanticConfigOpen}
+        onClose={() => setSemanticConfigOpen(false)}
+        onSave={handleSemanticConfigSave}
+        initialConfig={semanticConfig}
       />
     </div>
   );

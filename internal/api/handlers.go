@@ -67,7 +67,7 @@ func (h *Handlers) UploadDocument(c *gin.Context) {
 			return
 		}
 
-		// Process document for vector search
+		// Process document for vector search using semantic chunking
 		go func() {
 			defer func() {
 				if r := recover(); r != nil {
@@ -75,11 +75,18 @@ func (h *Handlers) UploadDocument(c *gin.Context) {
 				}
 			}()
 
-			if err := h.vectorService.ChunkAndEmbedDocument(doc); err != nil {
-				// Log error but don't fail the upload
-				fmt.Printf("Error embedding document %s: %v\n", doc.Name, err)
+			// Use semantic chunking by default
+			config := services.DefaultChunkConfig()
+			if err := h.vectorService.ChunkAndEmbedDocumentWithSemantics(doc, config); err != nil {
+				// Fallback to legacy chunking if semantic fails
+				fmt.Printf("Semantic chunking failed for document %s, falling back to legacy: %v\n", doc.Name, err)
+				if err := h.vectorService.ChunkAndEmbedDocument(doc); err != nil {
+					fmt.Printf("Error embedding document %s: %v\n", doc.Name, err)
+				} else {
+					fmt.Printf("Successfully embedded document %s with legacy chunking\n", doc.Name)
+				}
 			} else {
-				fmt.Printf("Successfully embedded document %s\n", doc.Name)
+				fmt.Printf("Successfully embedded document %s with semantic chunking\n", doc.Name)
 			}
 		}()
 
@@ -97,19 +104,26 @@ func (h *Handlers) UploadDocument(c *gin.Context) {
 		return
 	}
 
-	// Process document for vector search
+	// Process document for vector search using semantic chunking
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Printf("Panic in embedding process for document %s: %v\n", doc.Name, err)
+				fmt.Printf("Panic in embedding process for document %s: %v\n", doc.Name, r)
 			}
 		}()
 
-		if err := h.vectorService.ChunkAndEmbedDocument(doc); err != nil {
-			// Log error but don't fail the upload
-			fmt.Printf("Error embedding document %s: %v\n", doc.Name, err)
+		// Use semantic chunking by default
+		config := services.DefaultChunkConfig()
+		if err := h.vectorService.ChunkAndEmbedDocumentWithSemantics(doc, config); err != nil {
+			// Fallback to legacy chunking if semantic fails
+			fmt.Printf("Semantic chunking failed for document %s, falling back to legacy: %v\n", doc.Name, err)
+			if err := h.vectorService.ChunkAndEmbedDocument(doc); err != nil {
+				fmt.Printf("Error embedding document %s: %v\n", doc.Name, err)
+			} else {
+				fmt.Printf("Successfully embedded document %s with legacy chunking\n", doc.Name)
+			}
 		} else {
-			fmt.Printf("Successfully embedded document %s\n", doc.Name)
+			fmt.Printf("Successfully embedded document %s with semantic chunking\n", doc.Name)
 		}
 	}()
 
@@ -523,11 +537,18 @@ func (h *Handlers) UpdateDocument(c *gin.Context) {
 			fmt.Printf("Deleted old chunks for document %s\n", doc.Name)
 		}
 
-		// Create new chunks and embeddings
-		if err := h.vectorService.ChunkAndEmbedDocument(doc); err != nil {
-			fmt.Printf("Error re-embedding document %s: %v\n", doc.Name, err)
+		// Create new chunks and embeddings using semantic chunking
+		config := services.DefaultChunkConfig()
+		if err := h.vectorService.ChunkAndEmbedDocumentWithSemantics(doc, config); err != nil {
+			// Fallback to legacy chunking if semantic fails
+			fmt.Printf("Semantic chunking failed for document %s, falling back to legacy: %v\n", doc.Name, err)
+			if err := h.vectorService.ChunkAndEmbedDocument(doc); err != nil {
+				fmt.Printf("Error re-embedding document %s: %v\n", doc.Name, err)
+			} else {
+				fmt.Printf("Successfully re-embedded document %s with legacy chunking\n", doc.Name)
+			}
 		} else {
-			fmt.Printf("Successfully re-embedded document %s\n", doc.Name)
+			fmt.Printf("Successfully re-embedded document %s with semantic chunking\n", doc.Name)
 		}
 	}()
 
@@ -567,17 +588,87 @@ func (h *Handlers) ReembedDocument(c *gin.Context) {
 			fmt.Printf("Deleted old chunks for document %s\n", doc.Name)
 		}
 
-		// Create new chunks and embeddings
-		if err := h.vectorService.ChunkAndEmbedDocument(doc); err != nil {
-			fmt.Printf("Error re-embedding document %s: %v\n", doc.Name, err)
+		// Create new chunks and embeddings using semantic chunking
+		config := services.DefaultChunkConfig()
+		if err := h.vectorService.ChunkAndEmbedDocumentWithSemantics(doc, config); err != nil {
+			// Fallback to legacy chunking if semantic fails
+			fmt.Printf("Semantic chunking failed for document %s, falling back to legacy: %v\n", doc.Name, err)
+			if err := h.vectorService.ChunkAndEmbedDocument(doc); err != nil {
+				fmt.Printf("Error re-embedding document %s: %v\n", doc.Name, err)
+			} else {
+				fmt.Printf("Successfully re-embedded document %s with legacy chunking\n", doc.Name)
+			}
 		} else {
-			fmt.Printf("Successfully re-embedded document %s\n", doc.Name)
+			fmt.Printf("Successfully re-embedded document %s with semantic chunking\n", doc.Name)
 		}
 	}()
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "Document re-embedding started",
 		"document": doc,
+	})
+}
+
+// Semantic chunking endpoint
+type SemanticChunkingRequest struct {
+	DocumentID string `json:"document_id" binding:"required"`
+	Config     *services.ChunkConfig `json:"config,omitempty"`
+}
+
+func (h *Handlers) ReembedWithSemanticChunking(c *gin.Context) {
+	var req SemanticChunkingRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Parse document ID
+	docID, err := uuid.Parse(req.DocumentID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid document ID"})
+		return
+	}
+
+	// Get document
+	doc, err := h.documentService.GetDocument(docID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Document not found"})
+		return
+	}
+
+	// Use provided config or default
+	config := req.Config
+	if config == nil {
+		config = services.DefaultChunkConfig()
+	}
+
+	// Re-embed with semantic chunking
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("Panic in semantic re-embedding process for document %s: %v\n", doc.Name, r)
+			}
+		}()
+
+		// Delete old chunks first
+		if err := h.vectorService.DeleteDocumentChunks(doc.ID); err != nil {
+			fmt.Printf("Error deleting old chunks for document %s: %v\n", doc.Name, err)
+		} else {
+			fmt.Printf("Deleted old chunks for document %s\n", doc.Name)
+		}
+
+		// Create new chunks and embeddings using semantic chunking
+		if err := h.vectorService.ChunkAndEmbedDocumentWithSemantics(doc, config); err != nil {
+			fmt.Printf("Error semantic re-embedding document %s: %v\n", doc.Name, err)
+		} else {
+			fmt.Printf("Successfully semantic re-embedded document %s\n", doc.Name)
+		}
+	}()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Document semantic re-embedding started",
+		"document": doc,
+		"config":   config,
 	})
 }
 

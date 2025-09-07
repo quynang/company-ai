@@ -12,18 +12,30 @@ import (
 )
 
 type VectorService struct {
-	db           *gorm.DB
-	geminiClient *GeminiClientV2
+	db                      *gorm.DB
+	geminiClient            *GeminiClientV2
+	semanticChunkingService *SemanticChunkingService
 }
 
 func NewVectorService(db *gorm.DB, geminiAPIKey string) *VectorService {
 	return &VectorService{
-		db:           db,
-		geminiClient: NewGeminiClientV2(geminiAPIKey),
+		db:                      db,
+		geminiClient:            NewGeminiClientV2(geminiAPIKey),
+		semanticChunkingService: NewSemanticChunkingService(db, geminiAPIKey),
 	}
 }
 
-// ChunkDocument splits document content into chunks and creates embeddings
+// ChunkAndEmbedDocumentWithSemantics uses semantic chunking to split document content
+func (s *VectorService) ChunkAndEmbedDocumentWithSemantics(doc *models.Document, config *ChunkConfig) error {
+	if config == nil {
+		config = DefaultChunkConfig()
+	}
+
+	fmt.Printf("Starting semantic chunking for document: %s\n", doc.Name)
+	return s.semanticChunkingService.ChunkDocumentWithSemantics(doc, config)
+}
+
+// ChunkDocument splits document content into chunks and creates embeddings (legacy method)
 func (s *VectorService) ChunkAndEmbedDocument(doc *models.Document) error {
 	fmt.Printf("Starting embedding for document: %s\n", doc.Name)
 
@@ -42,8 +54,7 @@ func (s *VectorService) ChunkAndEmbedDocument(doc *models.Document) error {
 		fmt.Printf("Processing chunk %d/%d\n", i+1, len(chunks))
 
 		// Generate embedding for chunk
-		contentForEmbedding := fmt.Sprintf("%s\n\n%s", doc.Name, chunk)
-		embedding, err := s.geminiClient.GenerateEmbedding(contentForEmbedding)
+		embedding, err := s.geminiClient.GenerateEmbedding(chunk)
 		if err != nil {
 			fmt.Printf("Error generating embedding for chunk %d: %v\n", i, err)
 			return fmt.Errorf("failed to generate embedding for chunk %d: %w", i, err)

@@ -141,6 +141,15 @@ export const documentAPI = {
     return response.data;
   },
 
+  // Re-embed with semantic chunking
+  reembedWithSemanticChunking: async (id, config = null) => {
+    const response = await api.post('/documents/semantic-reembed', {
+      document_id: id,
+      config: config
+    });
+    return response.data;
+  },
+
   // Search documents
   searchDocuments: async (query, limit = 10) => {
     const response = await api.get(`/search?q=${encodeURIComponent(query)}&limit=${limit}`);
