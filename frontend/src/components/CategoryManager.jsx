@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, FileText, Calendar, Tag, Filter } from 'lucide-react';
 import { categoryAPI, documentAPI } from '../services/api';
+import './CategoryManager.css';
 
 const CategoryManager = () => {
   const [categories, setCategories] = useState([]);
@@ -10,7 +11,7 @@ const CategoryManager = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
+  const [viewMode, setViewMode] = useState('table'); // Only table view
   const [categoryStats, setCategoryStats] = useState({});
 
   useEffect(() => {
@@ -106,14 +107,14 @@ const CategoryManager = () => {
   // Get category color based on name
   const getCategoryColor = (name) => {
     const colors = [
-      'bg-blue-100 text-blue-800',
-      'bg-green-100 text-green-800',
-      'bg-purple-100 text-purple-800',
-      'bg-pink-100 text-pink-800',
-      'bg-indigo-100 text-indigo-800',
-      'bg-yellow-100 text-yellow-800',
-      'bg-red-100 text-red-800',
-      'bg-gray-100 text-gray-800'
+      'category-badge-blue',
+      'category-badge-green',
+      'category-badge-purple',
+      'category-badge-pink',
+      'category-badge-indigo',
+      'category-badge-yellow',
+      'category-badge-red',
+      'category-badge-gray'
     ];
     const hash = name.split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);
@@ -124,13 +125,15 @@ const CategoryManager = () => {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded"></div>
-            ))}
+      <div className="category-manager">
+        <div className="category-manager-container">
+          <div className="loading-container">
+            <div className="loading-skeleton">
+              <div className="skeleton-header"></div>
+              <div className="skeleton-row"></div>
+              <div className="skeleton-row"></div>
+              <div className="skeleton-row"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -138,232 +141,148 @@ const CategoryManager = () => {
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Category Management</h2>
-          <p className="text-gray-600 mt-1">Manage document categories and their assignments</p>
-        </div>
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-2"
-        >
-          <Plus size={16} />
-          Create Category
-        </button>
-      </div>
-
-      {/* Search and Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search categories..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              viewMode === 'grid' 
-                ? 'bg-blue-100 text-blue-700' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Grid
-          </button>
-          <button
-            onClick={() => setViewMode('table')}
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              viewMode === 'table' 
-                ? 'bg-blue-100 text-blue-700' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Table
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
-
-      {/* Create/Edit Form */}
-      {(showCreateForm || editingCategory) && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">
-            {editingCategory ? 'Edit Category' : 'Create New Category'}
-          </h3>
-          <form onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Category name"
-                />
-              </div>
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <input
-                  type="text"
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Category description"
-                />
-              </div>
+    <div className="category-manager">
+      <div className="category-manager-container">
+        {/* Search and Controls */}
+        <div className="controls-section">
+          <div className="controls-row">
+            <div className="search-container">
+              <Search className="search-icon" size={20} />
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
             </div>
-            <div className="mt-4 flex gap-2">
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                {editingCategory ? 'Update' : 'Create'}
-              </button>
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Categories List */}
-      <div className="bg-white shadow rounded-lg">
-        {filteredCategories.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            {searchTerm ? 'No categories found matching your search.' : 'No categories found. Create your first category to get started.'}
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="create-btn"
+            >
+              <Plus size={16} />
+              Create Category
+            </button>
           </div>
-        ) : viewMode === 'grid' ? (
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCategories.map((category) => (
-                <div key={category.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(category.name)}`}>
-                      <Tag size={14} className="inline mr-1" />
-                      {category.name}
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => startEdit(category)}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                        title="Edit category"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCategory(category.id)}
-                        className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                        title="Delete category"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {category.description || 'No description provided'}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <FileText size={14} />
-                      <span>{categoryStats[category.id] || 0} documents</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar size={14} />
-                      <span>{new Date(category.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
+        </div>
+
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+
+        {/* Create/Edit Form */}
+        {(showCreateForm || editingCategory) && (
+          <div className="form-section">
+            <h3 className="form-title">
+              {editingCategory ? 'Edit Category' : 'Create New Category'}
+            </h3>
+            <form onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="name" className="form-label">
+                    Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="form-input"
+                    placeholder="Category name"
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="form-group">
+                  <label htmlFor="description" className="form-label">
                     Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Documents
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  </label>
+                  <input
+                    type="text"
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="form-input"
+                    placeholder="Category description"
+                  />
+                </div>
+              </div>
+              <div className="form-buttons">
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                >
+                  {editingCategory ? 'Update' : 'Create'}
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Categories Table */}
+        <div className="table-container">
+          {filteredCategories.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-text">
+                {searchTerm ? 'No categories found matching your search.' : 'No categories found. Create your first category to get started.'}
+              </div>
+            </div>
+          ) : (
+            <table className="categories-table">
+              <thead className="table-header">
+                <tr>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Documents</th>
+                  <th>Created</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {filteredCategories.map((category) => (
-                  <tr key={category.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium mr-3 ${getCategoryColor(category.name)}`}>
-                          <Tag size={12} className="inline mr-1" />
-                          {category.name}
-                        </div>
+                  <tr key={category.id} className="table-row">
+                    <td className="table-cell">
+                      <div className={`category-badge ${getCategoryColor(category.name)}`}>
+                        <Tag size={12} />
+                        {category.name}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 max-w-xs truncate">
+                    <td className="table-cell">
+                      <div className="description-cell">
                         {category.description || 'No description'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <FileText size={14} className="mr-1" />
+                    <td className="table-cell">
+                      <div className="stats-cell">
+                        <FileText size={14} />
                         {categoryStats[category.id] || 0}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
+                    <td className="table-cell">
+                      <div className="date-cell">
                         {new Date(category.created_at).toLocaleDateString()}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
+                    <td className="table-cell">
+                      <div className="actions-cell">
                         <button
                           onClick={() => startEdit(category)}
-                          className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                          className="action-btn action-btn-edit"
                         >
                           <Edit size={14} />
                           Edit
                         </button>
                         <button
                           onClick={() => handleDeleteCategory(category.id)}
-                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                          className="action-btn action-btn-delete"
                         >
                           <Trash2 size={14} />
                           Delete
@@ -374,8 +293,8 @@ const CategoryManager = () => {
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

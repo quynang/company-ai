@@ -1,27 +1,77 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Bot, Settings } from 'lucide-react';
-import ChatMessage from './ChatMessage';
-import ChatInput from './ChatInput';
-import { categoryAPI } from '../services/api';
-import './ChatWindow.css';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Menu,
+  Bot,
+  Settings,
+  FileText,
+  Tag,
+  BookOpen,
+  Briefcase,
+  Code,
+  Database,
+  Globe,
+  Shield,
+  Zap,
+  Star,
+  Heart,
+  Target,
+  Lightbulb,
+  Rocket,
+  Puzzle,
+  Gamepad2,
+} from "lucide-react";
+import ChatMessage from "./ChatMessage";
+import ChatInput from "./ChatInput";
+import { categoryAPI } from "../services/api";
+import "./ChatWindow.css";
 
-const ChatWindow = ({ 
-  session, 
-  messages, 
-  onSendMessage, 
+const ChatWindow = ({
+  session,
+  messages,
+  onSendMessage,
   isLoading = false,
   onToggleSidebar,
   onSwitchToAdmin,
   setMessages,
-  onCreateSessionWithCategory
+  onCreateSessionWithCategory,
 }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
+
+  // Random icons for categories
+  const categoryIcons = [
+    FileText,
+    Tag,
+    BookOpen,
+    Briefcase,
+    Code,
+    Database,
+    Globe,
+    Shield,
+    Zap,
+    Star,
+    Heart,
+    Target,
+    Lightbulb,
+    Rocket,
+    Puzzle,
+    Gamepad2,
+  ];
+
+  // Get random icon for category based on name
+  const getCategoryIcon = (categoryName) => {
+    const hash = categoryName.split("").reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const IconComponent = categoryIcons[Math.abs(hash) % categoryIcons.length];
+    return IconComponent;
+  };
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -40,7 +90,7 @@ const ChatWindow = ({
       const response = await categoryAPI.getCategories();
       setCategories(response.categories || []);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      console.error("Error loading categories:", error);
     } finally {
       setCategoriesLoading(false);
     }
@@ -77,7 +127,7 @@ const ChatWindow = ({
   return (
     <div className="chat-window">
       <div className="chat-header">
-        <button 
+        <button
           className="sidebar-toggle"
           onClick={onToggleSidebar}
           title="Hiển thị/Ẩn danh sách cuộc trò chuyện"
@@ -88,9 +138,11 @@ const ChatWindow = ({
           <Bot size={24} className="chat-icon" />
           <div className="title-text">
             <h1>Company AI Assistant</h1>
-            <p>{session ? session.name : 'Chọn hoặc tạo cuộc trò chuyện mới'}</p>
+            <p>
+              {session ? session.name : "Chọn hoặc tạo cuộc trò chuyện mới"}
+            </p>
           </div>
-          <button 
+          <button
             className="admin-toggle"
             onClick={onSwitchToAdmin}
             title="Chuyển đến Admin Dashboard"
@@ -103,16 +155,31 @@ const ChatWindow = ({
       <div className="chat-messages">
         {!session ? (
           <div className="welcome-message">
-            <h2>Nhận trợ giúp về <span className="highlight">mọi thứ</span> trên Company AI</h2>
-            <div className="welcome-subtitle">
-              <p>Đặt câu hỏi. Tìm câu trả lời.</p>
-              <p>Quay lại với hoạt động làm việc.</p>
+            <div>
+              <h2>
+                Nhận trợ giúp về <span className="highlight">mọi thứ</span> trên
+                Company AI
+              </h2>
+              <div className="welcome-subtitle">
+                <p>Đặt câu hỏi. Tìm câu trả lời.</p>
+                <p>Quay lại với hoạt động làm việc.</p>
+              </div>
             </div>
-            
+
             {/* Search input field */}
             <div className="welcome-search-section">
               <div className="search-input-container">
-                <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  className="search-icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <circle cx="11" cy="11" r="8"></circle>
                   <path d="m21 21-4.35-4.35"></path>
                 </svg>
@@ -121,32 +188,37 @@ const ChatWindow = ({
                   className="search-input"
                   placeholder="Bạn cần trợ giúp về vấn đề gì?"
                   onKeyPress={(e) => {
-                    if (e.key === 'Enter' && e.target.value.trim()) {
+                    if (e.key === "Enter" && e.target.value.trim()) {
                       handleWelcomeInput(e.target.value.trim());
-                      e.target.value = '';
+                      e.target.value = "";
                     }
                   }}
                   disabled={isLoading || isTyping}
                 />
               </div>
             </div>
-            
+
             {/* Suggested questions */}
             {categories.length > 0 && (
               <div className="suggested-questions">
                 <h3>Hỏi về chuyên mục nào?</h3>
                 <div className="questions-grid">
-                  {categories.map((category) => (
-                    <button
-                      key={category.id}
-                      className="question-card"
-                      onClick={() => handleCategoryClick(category.id)}
-                      disabled={categoriesLoading}
-                    >
-                      <span className="question-icon">💡</span>
-                      <span className="question-text">{category.name}</span>
-                    </button>
-                  ))}
+                  {categories.map((category) => {
+                    const IconComponent = getCategoryIcon(category.name);
+                    return (
+                      <button
+                        key={category.id}
+                        className="question-card"
+                        onClick={() => handleCategoryClick(category.id)}
+                        disabled={categoriesLoading}
+                      >
+                        <span className="question-icon">
+                          <IconComponent size={20} />
+                        </span>
+                        <span className="question-text">{category.name}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -160,28 +232,28 @@ const ChatWindow = ({
         ) : (
           <div className="messages-list">
             {messages.map((message, index) => (
-              <ChatMessage 
-                key={message.id || index} 
-                message={message} 
+              <ChatMessage
+                key={message.id || index}
+                message={message}
                 onActionClick={(result) => {
                   if (result.message) {
                     // Show success message
                     const successMessage = {
                       id: Date.now(),
-                      role: 'assistant',
+                      role: "assistant",
                       content: result.message,
-                      created_at: new Date().toISOString()
+                      created_at: new Date().toISOString(),
                     };
-                    setMessages(prev => [...prev, successMessage]);
+                    setMessages((prev) => [...prev, successMessage]);
                   } else if (result.error) {
                     // Show error message
                     const errorMessage = {
                       id: Date.now(),
-                      role: 'assistant',
+                      role: "assistant",
                       content: result.error,
-                      created_at: new Date().toISOString()
+                      created_at: new Date().toISOString(),
                     };
-                    setMessages(prev => [...prev, errorMessage]);
+                    setMessages((prev) => [...prev, errorMessage]);
                   }
                 }}
               />

@@ -173,6 +173,8 @@ func (s *ChatService) SendMessageWithResponse(sessionID uuid.UUID, userMessage s
 		conversationText += fmt.Sprintf("%s: %s\n", msg.Role, msg.Content)
 	}
 
+	fmt.Println(conversationText)
+
 	// Generate AI response
 	response, err := s.geminiClient.Chat(conversationText)
 	if err != nil {
@@ -252,16 +254,18 @@ func (s *ChatService) buildSystemPrompt(context string, userContext string) stri
    - Sử dụng heading (##) cho các phần chính.
    - Dùng danh sách đánh số hoặc bullet (-) cho từng ý.
    - Nếu có link tài liệu đính kèm, trình bày theo dạng: Link tải [Tên hiển thị](URL).
-   - Nếu có bảng, hãy sử dụng bảng Markdown chuẩn.
-`
-
-	if userContext != "" {
-		prompt += fmt.Sprintf(`
+	 - Hiển thị hình ảnh tài liệu theo dạng:  
+     ![Hình ảnh tài liệu](URL)
+8. Đối với dạng câu hỏi kết quả. Hãy trả lời ngắn gọn kết quả cho người dùng
 
 ## NGỮ CẢNH NGƯỜI DÙNG:
-%s`, userContext)
-	}
+	Tên nhân viên: Nguyễn Quý Năng
+	Ngày gia nhập: 2020-01-01
+	Phòng ban: Phòng IT
+	Chức vụ: Manager
+	Ngày hôm nay: 8/9/2025
 
+`
 	if context != "" {
 		prompt += fmt.Sprintf(`
 
@@ -275,8 +279,6 @@ func (s *ChatService) buildSystemPrompt(context string, userContext string) stri
 
 ## YÊU CẦU:
 Hãy trả lời câu hỏi dựa trên thông tin trên và xuất kết quả ở định dạng Markdown.`
-
-	fmt.Println(prompt)
 
 	return prompt
 }

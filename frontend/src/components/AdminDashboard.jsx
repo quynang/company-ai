@@ -198,27 +198,29 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      <div className="dashboard-header">
-        <h1>Admin Dashboard</h1>
-        <p>Quản lý documents và embedding</p>
-        <div className="header-actions">
-          <button 
-            onClick={() => setSemanticConfigOpen(true)} 
-            className="config-btn"
-            title="Cấu hình Semantic Chunking"
-          >
-            <Settings size={16} />
-            Cấu hình Semantic
-          </button>
-          <button 
-            onClick={() => setIsCreating(true)} 
-            className="create-new-btn"
-          >
-            <Plus size={16} />
-            Tạo Document Mới
-          </button>
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+          <div>
+            <h1>Admin Dashboard</h1>
+          </div>
+          <div className="header-actions">
+            <button 
+              onClick={() => setSemanticConfigOpen(true)} 
+              className="config-btn"
+              title="Cấu hình Semantic Chunking"
+            >
+              <Settings size={16} />
+              Cấu hình Semantic
+            </button>
+            <button 
+              onClick={() => setIsCreating(true)} 
+              className="create-new-btn"
+            >
+              <Plus size={16} />
+              Tạo Document Mới
+            </button>
+          </div>
         </div>
-      </div>
 
       {/* Tab Navigation */}
       <div className="tab-navigation">
@@ -226,14 +228,14 @@ const AdminDashboard = () => {
           className={`tab-button ${activeTab === 'documents' ? 'active' : ''}`}
           onClick={() => setActiveTab('documents')}
         >
-          <FileText size={16} />
+          <FileText size={14} />
           Documents
         </button>
         <button
           className={`tab-button ${activeTab === 'categories' ? 'active' : ''}`}
           onClick={() => setActiveTab('categories')}
         >
-          <Tag size={16} />
+          <Tag size={14} />
           Categories
         </button>
       </div>
@@ -276,12 +278,9 @@ const AdminDashboard = () => {
                       {doc.content.substring(0, 100)}...
                     </p>
                     {doc.categories && doc.categories.length > 0 && (
-                      <div className="document-categories mt-2">
+                      <div className="document-categories">
                         {doc.categories.map((category) => (
-                          <span
-                            key={category.id}
-                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-1 mb-1"
-                          >
+                          <span key={category.id}>
                             {category.name}
                           </span>
                         ))}
@@ -362,7 +361,7 @@ const AdminDashboard = () => {
                     className="action-btn edit-btn"
                     title="Chỉnh sửa"
                   >
-                    <Edit size={16} />
+                    <Edit size={12} />
                     Chỉnh sửa
                   </button>
                   <button
@@ -370,7 +369,7 @@ const AdminDashboard = () => {
                     className="action-btn reembed-btn"
                     title="Chạy lại embedding (Legacy)"
                   >
-                    <RefreshCw size={16} />
+                    <RefreshCw size={12} />
                     Re-embed
                   </button>
                   <button
@@ -378,7 +377,7 @@ const AdminDashboard = () => {
                     className="action-btn semantic-btn"
                     title="Chạy lại embedding với Semantic Chunking"
                   >
-                    <Brain size={16} />
+                    <Brain size={12} />
                     Semantic Re-embed
                   </button>
                   <button
@@ -386,7 +385,7 @@ const AdminDashboard = () => {
                     className="action-btn delete-btn"
                     title="Xóa"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={12} />
                     Xóa
                   </button>
                 </div>
@@ -394,8 +393,8 @@ const AdminDashboard = () => {
 
               <div className="editor-content">
                 {/* Category Management Section */}
-                <div className="category-management mb-6 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <div className="category-management">
+                  <h3>
                     <Tag size={20} />
                     Document Categories
                   </h3>
@@ -405,13 +404,13 @@ const AdminDashboard = () => {
                       onCategoryChange={setSelectedDocCategories}
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex">
                     <button
                       onClick={handleUpdateDocumentCategories}
                       disabled={isUpdatingCategories}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="btn-update-categories"
                     >
-                      <Save size={16} />
+                      <Save size={10} />
                       {isUpdatingCategories ? 'Updating...' : 'Update Categories'}
                     </button>
                   </div>
@@ -469,10 +468,11 @@ const AdminDashboard = () => {
             </div>
           )}
         </div>
-      </div>
+        </div>
       ) : (
         <CategoryManager />
       )}
+      </div>
 
       {/* Confirm Dialog */}
       <ConfirmDialog

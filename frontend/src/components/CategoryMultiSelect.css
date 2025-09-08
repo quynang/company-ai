@@ -1,108 +1,403 @@
+/* CategoryMultiSelect.css - Modern React Select Styling */
+
 .category-multi-select {
   position: relative;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.category-multi-select label {
-  font-weight: 500;
+.category-multi-select-label {
+  display: block;
+  font-weight: 600;
   color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
 }
 
-.category-multi-select button {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+/* React Select Custom Styles */
+.category-select-container {
+  position: relative;
+  z-index: 1000;
 }
 
-.category-multi-select button:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.category-select-container .react-select__control {
+  min-height: 48px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
-.category-multi-select .dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  margin-top: 4px;
+.category-select-container .react-select__control:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  transform: translateY(-1px);
+}
+
+.category-select-container .react-select__control--is-focused {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(102, 126, 234, 0.15);
   background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  max-height: 240px;
-  overflow-y: auto;
 }
 
-.category-multi-select .dropdown-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+.category-select-container .react-select__value-container {
+  padding: 8px 16px;
+  gap: 8px;
 }
 
-.category-multi-select .dropdown-item:hover {
-  background-color: #f3f4f6;
-}
-
-.category-multi-select .dropdown-item.selected {
-  background-color: #eff6ff;
-}
-
-.category-multi-select .category-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 8px;
-  margin: 2px;
-  background-color: #dbeafe;
-  color: #1e40af;
-  border-radius: 9999px;
-  font-size: 12px;
+.category-select-container .react-select__placeholder {
+  color: #9ca3af;
   font-weight: 500;
+  font-size: 0.875rem;
 }
 
-.category-multi-select .category-tag .remove-btn {
-  margin-left: 4px;
-  padding: 0;
-  background: none;
+.category-select-container .react-select__input-container {
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.category-select-container .react-select__multi-value {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
   border: none;
-  color: #6b7280;
-  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.category-select-container .react-select__multi-value__label {
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.category-select-container .react-select__multi-value__remove {
+  color: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  margin: 2px;
 }
 
-.category-multi-select .category-tag .remove-btn:hover {
-  background-color: #9ca3af;
+.category-select-container .react-select__multi-value__remove:hover {
+  background: rgba(255, 255, 255, 0.2);
   color: white;
+  transform: scale(1.1);
 }
 
-.category-multi-select .select-all-btn {
-  padding: 8px 12px;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 12px;
-  color: #3b82f6;
+.category-select-container .react-select__indicators {
+  padding-right: 12px;
+}
+
+.category-select-container .react-select__indicator {
+  color: #9ca3af;
+  transition: all 0.2s ease;
+}
+
+.category-select-container .react-select__indicator:hover {
+  color: #667eea;
+  transform: scale(1.1);
+}
+
+.category-select-container .react-select__indicator-separator {
+  background: #e5e7eb;
+  margin: 8px 0;
+}
+
+.category-select-container .react-select__dropdown-indicator {
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.category-select-container .react-select__control--menu-is-open .react-select__dropdown-indicator {
+  transform: rotate(180deg);
+}
+
+/* Menu Styles */
+.category-select-container .react-select__menu {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  margin-top: 8px;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+  z-index: 9999 !important;
+  position: relative;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.category-select-container .react-select__menu-list {
+  padding: 12px;
+  max-height: 240px;
+  z-index: 9999;
+  position: relative;
+}
+
+.category-select-container .react-select__option {
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin: 4px 0;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
 }
 
-.category-multi-select .select-all-btn:hover {
-  color: #1d4ed8;
+.category-select-container .react-select__option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.15), transparent);
+  transition: left 0.6s ease;
+  z-index: 0;
 }
 
-/* Responsive design */
+.category-select-container .react-select__option:hover::before {
+  left: 100%;
+}
+
+.category-select-container .react-select__option:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: #1e293b;
+  transform: translateX(6px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+.category-select-container .react-select__option:active {
+  transform: translateX(4px) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+.category-select-container .react-select__option--is-focused {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: translateX(6px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.category-select-container .react-select__option--is-selected {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  font-weight: 600;
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.category-select-container .react-select__option--is-selected::after {
+  content: '✓';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+/* Category Badge Styles */
+.category-option-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.category-option-badge {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.category-option-badge-blue { background: #3b82f6; }
+.category-option-badge-green { background: #10b981; }
+.category-option-badge-purple { background: #8b5cf6; }
+.category-option-badge-pink { background: #ec4899; }
+.category-option-badge-indigo { background: #6366f1; }
+.category-option-badge-yellow { background: #f59e0b; }
+.category-option-badge-red { background: #ef4444; }
+.category-option-badge-gray { background: #6b7280; }
+
+.category-option-text {
+  flex: 1;
+}
+
+.category-option-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* Loading and Error States */
+.category-select-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.category-select-error {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* No Options Message */
+.category-select-container .react-select__no-options-message {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+/* Clear All Button */
+.category-select-clear-all {
+  position: absolute;
+  top: 50%;
+  right: 40px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.category-select-clear-all:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .category-multi-select .dropdown {
+  .category-select-container .react-select__control {
+    min-height: 44px;
+  }
+  
+  .category-select-container .react-select__value-container {
+    padding: 6px 12px;
+  }
+  
+  .category-select-container .react-select__menu-list {
     max-height: 200px;
   }
   
-  .category-multi-select .dropdown-item {
-    padding: 12px;
+  .category-select-container .react-select__option {
+    padding: 16px 12px;
+    font-size: 0.8rem;
   }
   
-  .category-multi-select .category-tag {
-    font-size: 11px;
+  .category-select-container .react-select__multi-value__label {
+    font-size: 0.7rem;
     padding: 3px 6px;
   }
 }
+
+@media (max-width: 480px) {
+  .category-select-container .react-select__control {
+    min-height: 40px;
+  }
+  
+  .category-select-container .react-select__value-container {
+    padding: 4px 8px;
+  }
+  
+  .category-select-container .react-select__option {
+    padding: 12px 8px;
+  }
+}
+
+/* React Select Portal Z-Index Fix */
+.react-select__menu-portal {
+  z-index: 9999 !important;
+}
+
+.react-select__menu-portal .react-select__menu {
+  z-index: 9999 !important;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .category-multi-select-label {
+    color: #f3f4f6;
+  }
+  
+  .category-select-container .react-select__control {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    border-color: #374151;
+  }
+  
+  .category-select-container .react-select__control:hover {
+    border-color: #667eea;
+  }
+  
+  .category-select-container .react-select__menu {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .category-select-container .react-select__option {
+    color: #f3f4f6;
+  }
+  
+  .category-select-container .react-select__option:hover {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  }
+}
+

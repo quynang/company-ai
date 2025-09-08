@@ -123,3 +123,4 @@ func (s *CategoryService) GetDocumentsByCategory(categoryID uuid.UUID) ([]models
 
 	return documents, nil
 }
+
